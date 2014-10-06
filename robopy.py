@@ -2,13 +2,13 @@
 __author__ = 'sergiopablo'
 import itertools
 import random
-# ACÁ SE CREA EL MAPA A PARTIR DEL ARCHIVO 'mapa'
 
+# ACÁ SE CREA EL MAPA A PARTIR DEL ARCHIVO 'mapa'
 def crear_mapa():
     archivo = open('mapa')
     mapa = list()
     for linea in archivo:
-        mapa.append(map(int,(linea.strip().split('   '))))
+        mapa.append((list(map(int,linea.strip().split('   ')))))
     return mapa
 
 # ACÁ SE DEFINE EL NUMERO TOTAL DE FILAS Y COLUMNAS
@@ -34,10 +34,14 @@ def moverse(coord_actual, dir):
                     "E": ['E','E','E','E','E','E','E','E','N','S'],
                     "O": ['O','O','O','O','O','O','O','O','N','S'],
                     }
-    x = coord_actual[0]
-    y = coord_actual[1]
-    pared_x, pared_y = buscar_punto(pared, mapa)
+
     direccion = random.choice(diccionario_prob[dir])
+    prob = 0
+    if direccion == dir:
+        prob = 0.8
+    else:
+        prob = 0.1
+
     coord_nueva = coord_actual
     coord_vieja = coord_nueva
     if direccion == 'N':
@@ -50,11 +54,14 @@ def moverse(coord_actual, dir):
         coord_nueva = [coord_actual[0]-1,coord_actual[1]]
 
     if coord_nueva == coord_pared:
-        return coord_vieja
+
+        return (coord_vieja, prob)
+
     elif (coord_nueva[0] >= 0 and coord_nueva[1] >= 0) and (coord_nueva[0] < columnas and coord_nueva[1] < filas):
-        return coord_nueva
+        return (coord_nueva, prob)
     else:
-        return coord_vieja
+        return (coord_vieja, prob)
+
 
 def crear_diccionario_mapa(politica):
     diccionario_celdas = dict()
@@ -66,17 +73,18 @@ def crear_diccionario_mapa(politica):
     return diccionario_celdas
 
 
-mapa = crear_mapa()
 
+mapa = crear_mapa()
 
 # ACÁ SE CREAN TODAS LAS POLÍTICAS POSIBLES Y SE ALMACENAN EN UNA LISTA GRACIAS AL MODULO "itertools"
 politicas = [item for item in itertools.product("NSEO", repeat=9)]
 
+
 # ACÁ SE DEFINEN LOS PARÁMETROS
-salida = int(raw_input('Estado de Salida: '))
-llegada = int(raw_input('Estado de Llegada: '))
-restriccion = int(raw_input('Estado No Accesible: '))
-pared = int(raw_input('Estado Pared: '))
+salida = int(input('Estado de Salida: '))
+llegada = int(input('Estado de Llegada: '))
+restriccion = int(input('Estado No Accesible: '))
+pared = int(input('Estado Pared: '))
 
 coord_salida = buscar_punto(salida, mapa)
 coord_llegada = buscar_punto(llegada, mapa)
@@ -91,39 +99,59 @@ mejor_politica = ''
 coord_robot = coord_salida
 punto_actual = mapa[coord_robot[1]][coord_robot[0]]
 mejor_puntaje = -10.0
-numero_trayectorias = 50
-numero_pasos = 20
+numero_trayectorias = 20
+numero_pasos = 10
 total = round(0)
 porcentaje = int(0)
-print len(politicas)
+print (len(politicas))
+
 for politica in politicas:
     total += 1
     politica_actual = crear_diccionario_mapa(politica)
+    probabilidad_acumulada = list()
+    lista_puntajes = list()
+
     for trayectoria in range(numero_trayectorias):
+        prob_actual = 1
         coord_robot = coord_salida
         punto_actual = mapa[coord_robot[1]][coord_robot[0]]
-        puntaje = 0
+        puntaje_trayectoria = 0
+
         for paso in range(numero_pasos):
-            coord_robot = moverse(coord_robot, politica_actual[punto_actual])
+
+            coord_robot, prob = moverse(coord_robot, politica_actual[punto_actual])
+
+            prob_actual *= prob
             punto_actual = mapa[coord_robot[1]][coord_robot[0]]
             if punto_actual not in conjunto_restriccion:
-                puntaje -= 0.02
+                puntaje_trayectoria -= 0.02
             elif punto_actual == llegada:
-                puntaje += 1
+                puntaje_trayectoria += 1
                 break
             else:
-                puntaje -= 1
+                puntaje_trayectoria -= 1
                 break
+        probabilidad_acumulada.append(prob_actual)
+        lista_puntajes.append(puntaje_trayectoria)
 
-        if puntaje >= mejor_puntaje:
-            mejor_puntaje = puntaje
-            mejor_politica = politica_actual
+    puntaje_ponderado = 0
+
+    for puntaje in range(numero_trayectorias):
+        puntaje_ponderado += (lista_puntajes[puntaje])*(probabilidad_acumulada[puntaje]/sum(probabilidad_acumulada))
+
+
+    if puntaje_ponderado >= mejor_puntaje:
+        mejor_puntaje = puntaje_ponderado
+        mejor_politica = politica_actual
+
     p_actual = int(total/len(politicas)*100)
     if p_actual != porcentaje:
         porcentaje = p_actual
-        print str(porcentaje) + "%"
-print mejor_politica
-print mejor_puntaje
+        print (str(porcentaje) + "%")
+
+
+print (mejor_politica)
+print (mejor_puntaje)
 
 
 
