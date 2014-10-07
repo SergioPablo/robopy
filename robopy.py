@@ -169,8 +169,10 @@ for politica in politicas:
         #LA PROBABILIDAD ACTUAL DE LA TRAYECTORIA
         prob_actual = 1
 
+        # EL ROBOT PARTE EN EL PUNTO DE INICIO
         coord_robot = coord_salida
 
+        # EL ROBOT SE ENCUENTRA EN UNA COORDENADA DEL MAPA
         punto_actual = mapa[coord_robot[1]][coord_robot[0]]
 
         puntaje_trayectoria = 0
