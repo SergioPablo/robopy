@@ -27,6 +27,7 @@ def buscar_punto(p, lista):
         columna_actual = 0
 
 # ESTA FUNCION RECIBE LA COORDENADA ACTUAL Y LA DIRECCION EN FORMA DE STRING Y RETORNA LA NUEVA COORDENADA Y LA PROBABILIDAD QUE TUVO EL MOVIMIENTO
+
 def moverse(coord_actual, dir):
     diccionario_prob = {"N": ['N','N','N','N','N','N','N','N','E','O'],
                     "S": ['S','S','S','S','S','S','S','S','E','O'],
@@ -80,8 +81,7 @@ columnas = 4
 # ACÁ SE CREA EL MAPA
 mapa = crear_mapa()
 
-# ACÁ SE CREAN TODAS LAS POLÍTICAS POSIBLES Y SE ALMACENAN EN UNA LISTA GRACIAS AL MODULO "itertools"
-politicas = [item for item in itertools.product("NSEO", repeat=filas*columnas-3)]
+
 
 valores_utilizados = list()
 
@@ -89,7 +89,7 @@ valores_utilizados = list()
 
 salida = 0
 while salida not in valores_utilizados:
-    valor = int(input('Estado de Salida: '))
+    valor = int(input('Estado de Inicio: '))
     if valor in valores_utilizados or valor < 1 or valor > filas*columnas:
         print("Valor ya utilizado o valor inválido, ingrese otro")
     else:
@@ -98,7 +98,7 @@ while salida not in valores_utilizados:
 
 llegada = 0
 while llegada not in valores_utilizados:
-    valor = int(input('Estado de Salida: '))
+    valor = int(input('Estado de Llegada: '))
     if valor in valores_utilizados or valor < 1 or valor > filas*columnas:
         print("Valor ya utilizado o valor inválido, ingrese otro")
     else:
@@ -107,7 +107,7 @@ while llegada not in valores_utilizados:
 
 restriccion = 0
 while restriccion not in valores_utilizados:
-    valor = int(input('Estado de Llegada: '))
+    valor = int(input('Estado No Accesible: '))
     if valor in valores_utilizados or valor < 1 or valor > filas*columnas:
         print("Valor ya utilizado o valor inválido, ingrese otro")
     else:
@@ -139,18 +139,25 @@ coord_robot = coord_salida
 punto_actual = mapa[coord_robot[1]][coord_robot[0]]
 mejor_puntaje = -10.0
 numero_trayectorias = 20
-numero_pasos = 10
+numero_pasos = 25
 
 #PARÁMETROS PARA LLEVAR EL PORCENTAJE
 total = round(0)
 porcentaje = int(0)
 
 
-print ("Total de politicas: " + str(len(politicas)))
+# ACÁ SE CREAN TODAS LAS POLÍTICAS POSIBLES Y SE ALMACENAN EN UNA LISTA GRACIAS AL MODULO "itertools"
+
+producto = filas * columnas - 3
+
+#politicas = [item for item in itertools.product("NSEO", repeat=producto)]
+
+print ("Total de politicas: " + str(4**(producto)))
+print ("0%")
 
 #COMIENZA LA ITERACIÓN
 
-for politica in politicas:
+for politica in itertools.product("NSEO", repeat=producto):
     # LA VARIABLE total ES PARA LLEVAR EL PORCENTAJE
     total += 1
 
@@ -222,7 +229,7 @@ for politica in politicas:
         mejor_politica = politica_actual
 
     # ACÁ SE LLEVA EL PORCENTAJE
-    p_actual = int(total/len(politicas)*100)
+    p_actual = int((total/(4**(producto)))*100)
     if p_actual != porcentaje:
         porcentaje = p_actual
         print (str(porcentaje) + "%")

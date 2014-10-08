@@ -9,6 +9,9 @@
         </XML>
         <codeStyleSettings language="Python">
           <option name="PARENT_SETTINGS_INSTALLED" value="true" />
+          <indentOptions>
+            <option name="SMART_TABS" value="true" />
+          </indentOptions>
         </codeStyleSettings>
       </value>
     </option>
